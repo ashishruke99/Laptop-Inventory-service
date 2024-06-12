@@ -277,9 +277,9 @@
 
   document.getElementById('switchy').addEventListener('change', function() {
     if (this.checked) {
-        window.location.href = '{{ url_for("customer") }}'; 
-    } else {
         window.location.href = '{{ url_for("admin") }}'; 
+    } else {
+        window.location.href = '{{ url_for("customer") }}'; 
     }
   });
 });
