@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Admin View</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+      
+  </head>
+  <body>
+    <div class="container">
+      <div class="input-switch">
+        <label for="switchy" id="admin-label">Admin</label>
+        <input type="checkbox" id="switchy" class="input" />
+        <label for="switchy" class="switch"></label>
+        <label for="switchy" id="customer-label">Customer</label>
+      </div>
+    </div>    
+  
+    <div class="sidebar">
+      <h2 class="text-center">Add Product</h2>
+      <form method="POST" action="/admin">
+        <div class="form-group">
+          <label for="brand">Brand</label>
+          <select class="form-control" id="brand" name="brand">
+            <option value="All">All</option>
+            {% for brand in brands %}
+              <option value="{{ brand }}">{{ brand }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="model">Model</label>
+          <input type="text" class="form-control" id="model" name="model" required>
+        </div>
+        <div class="form-group">
+          <label for="price">Price</label>
+          <input type="number" class="form-control" id="price" name="price" step="0.01" required>
+        </div>
+        <button type="submit" name="add_product" class="btn btn-primary btn-block">Add Product</button>
+      </form>
+    </div>
+
+    <div class="main-content">
+      <h1 class="mt-5">Admin View</h1>
+      
+      <div class="mt-3">
+        <h2>Inventory</h2>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Product ID</th>
+              <th>
+                Brand
+                <select id="brandFilter">
+                  <option value="All">All</option>
+                  {% for brand in brands %}
+                    <option value="{{ brand }}">{{ brand }}</option>
+                  {% endfor %}
+                </select>
+              </th>
+              <th>
+                Model
+                <select id="modelFilter">
+                  <option value="All">All</option>
+                </select>
+              </th>
+              <th>Price</th>
+              <th>Quantity</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for index, row in inventory_data.iterrows() %}
+              <tr data-brand="{{ row['Brand'] }}" data-model="{{ row['Model'] }}">
+                <td>{{ row['Product ID'] }}</td>
+                <td>{{ row['Brand'] }}</td>
+                <td>{{ row['Model'] }}</td>
+                <td>{{ row['Price'] }}</td>
+                <td>{{ row['Quantity'] }}</td>
+                <td>
+                  <button class="btn btn-warning" data-toggle="modal" data-target="#updateModal" data-product-id="{{ row['Product ID'] }}" data-quantity="{{ row['Quantity'] }}">Update Quantity</button>
+                  <button class="btn btn-danger" data-toggle="modal" data-target="#removeModal" data-product-id="{{ row['Product ID'] }}">Remove</button>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Update Quantity Modal -->
+    <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <form method="POST" action="/admin">
+            <div class="modal-header">
+              <h5 class="modal-title" id="updateModalLabel">Update Quantity</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <input type="hidden" name="product_id" id="updateProductId">
+              <div class="form-group quantity-control">
+                <button type="button" id="decreaseQuantity" class="btn btn-secondary">-</button>
+                <input type="text" id="quantityDisplay" class="quantity-display" readonly>
+                <input type="hidden" id="quantity" name="quantity">
+                <button type="button" id="increaseQuantity" class="btn btn-secondary">+</button>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="submit" name="update_quantity" class="btn btn-primary">Update Quantity</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Remove Item Modal -->
+    <div class="modal fade" id="removeModal" tabindex="-1" role="dialog" aria-labelledby="removeModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <form method="POST" action="/admin">
+            <div class="modal-header">
+              <h5 class="modal-title" id="removeModalLabel">Remove Item</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <input type="hidden" name="product_id" id="removeProductId">
+              <p>Are you sure you want to remove this item?</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+              <button type="submit" name="remove_item" class="btn btn-danger">Yes, Remove</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var brandFilter = document.getElementById('brandFilter');
+        var modelFilter = document.getElementById('modelFilter');
+
+        // Function to populate the model filter based on the selected brand
+        function populateModelFilter() {
+          var selectedBrand = brandFilter.value;
+          var models = new Set();
+          document.querySelectorAll('tbody tr').forEach(function(row) {
+            var brand = row.getAttribute('data-brand');
+            var model = row.getAttribute('data-model');
+            if (selectedBrand === 'All' || brand === selectedBrand) {
+              models.add(model);
+            }
+          });
+
+          // Clear and populate the model filter
+          modelFilter.innerHTML = '<option value="All">All</option>';
+          models.forEach(function(model) {
+            var option = document.createElement('option');
+            option.value = model;
+            option.textContent = model;
+            modelFilter.appendChild(option);
+          });
+        }
+
+        // Function to filter the table rows based on the selected filters
+        function filterTable() {
+          var selectedBrand = brandFilter.value;
+          var selectedModel = modelFilter.value;
+          document.querySelectorAll('tbody tr').forEach(function(row) {
+            var brand = row.getAttribute('data-brand');
+            var model = row.getAttribute('data-model');
+            var showRow = (selectedBrand === 'All' || brand === selectedBrand) &&
+                          (selectedModel === 'All' || model === selectedModel);
+            row.style.display = showRow ? '' : 'none';
+          });
+        }
+
+        // Event listeners for the filters
+        brandFilter.addEventListener('change', function() {
+          populateModelFilter();
+          filterTable();
+        });
+        modelFilter.addEventListener('change', filterTable);
+
+        // Initial population of the model filter
+        populateModelFilter();
+      });
+
+      $('#updateModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var productId = button.data('product-id');
+        var quantity = button.data('quantity');
+        var modal = $(this);
+        modal.find('#updateProductId').val(productId);
+        modal.find('#quantityDisplay').val(quantity);
+        modal.find('#quantity').val(quantity);
+
+        var quantityDisplay = modal.find('#quantityDisplay');
+        var quantityInput = modal.find('#quantity');
+
+        modal.find('#decreaseQuantity').off('click').on('click', function() {
+          var currentQuantity = parseInt(quantityDisplay.val());
+            currentQuantity--;
+            quantityDisplay.val(currentQuantity);
+            quantityInput.val(currentQuantity);
+          
+        });
+
+        modal.find('#increaseQuantity').off('click').on('click', function() {
+          var currentQuantity = parseInt(quantityDisplay.val());
+          currentQuantity++;
+          quantityDisplay.val(currentQuantity);
+          quantityInput.val(currentQuantity);
+        });
+      });
+
+      $('#removeModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var productId = button.data('product-id');
+        var modal = $(this);
+        modal.find('#removeProductId').val(productId);
+      });
+      
+      document.getElementById('switchy').addEventListener('change', function() {
+        if (this.checked) {
+          window.location.href = '{{ url_for("customer") }}';
+        } else {
+          window.location.href = '{{ url_for("admin") }}'; 
+        }
+        });
+      </script>
+    </script>
+  </body>
+</html>

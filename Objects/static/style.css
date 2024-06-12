@@ -1,0 +1,260 @@
+/* admin -sidebar */
+.sidebar {
+    height: 100vh;
+    width: 250px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #f8f9fa;
+    padding-top: 20px;
+    font-family: Arial, sans-serif;
+    border-right: 1px solid #dee2e6;
+    transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out;
+}
+
+.sidebar:hover {
+    background-color: #e2e6ea;
+    border-color: #c5c9cd;
+}
+
+.sidebar h2 {
+    text-align: center;
+    color: #06468a;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.sidebar h2:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.label {
+    display: block;
+    margin-bottom: 5px;
+    color: #495057;
+    font-weight: bold;
+}
+
+.form-control {
+    width: calc(100% - 10px);
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #06468a;
+}
+
+.select-control {
+    width: calc(100% - 10px);
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+}
+
+.btn-primary {
+    width: calc(100% - 10px);
+    padding: 10px;
+    background-color: #06468a;
+    border: none;
+    border-radius: 5px;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* admin - main-content */
+.main-content {
+    margin-left: 260px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-left: 1px solid #dee2e6;
+    transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out;
+}
+
+.main-content:hover {
+    background-color: #e2e6ea;
+    border-color: #c5c9cd;
+}
+
+.table th select {
+    width: calc(100% - 10px);
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+.table th select:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.table {
+    transition: all 0.3s ease-in-out;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+
+.table thead {
+    background: linear-gradient(to right, #06468a, #5a92d1);
+    color: #fff;
+}
+
+.table tbody tr {
+    transition: transform 0.3s ease;
+}
+
+.table tbody tr:hover {
+    transform: scale(1.02);
+    background-color: #f1f1f1;
+}
+
+/* Modal-body */
+.modal-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    }
+    
+    .quantity-control {
+    display: flex;
+    align-items: center;
+    }
+    
+    .quantity-control button {
+    width: 30px;
+    height: 30px;
+    font-size: 20px;
+    line-height: 20px;
+    text-align: center;
+    padding: 0;
+    margin: 0 5px;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    }
+    
+    .quantity-control button
+    {
+    background-color: #0056b3;
+    }
+    
+    .quantity-display {
+    width: 50px;
+    text-align: center;
+    font-weight: bold;
+    color: #007bff;
+    }
+    
+    .modal-body p {
+    margin-bottom: 0;
+    }
+    
+    .modal-footer {
+    justify-content: space-between;
+    }
+    
+    /* Toggler - admin vs customer */
+    @import url('https://fonts.googleapis.com/css?family=Roboto+Condensed:300');
+
+    body {
+    font-family: "Roboto Condensed", sans-serif;
+    font-size: 16px;
+    line-height: 1.875em;
+    position: relative;
+    background-color: #acc1ee;
+    transition: background-color 0.4s;
+    }
+    
+    body.active {
+    background-color: #5a92d1;
+    }
+    
+    .input-switch {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    }
+    
+    .input {
+    position: absolute;
+    visibility: hidden;
+    }
+    
+    .switch {
+    position: relative;
+    height: 10px;
+    width: 45px;
+    border-radius: 10px;
+    background-color: #a4c1ed;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+    }
+    
+    .switch::before,
+    .switch::after {
+    content: "";
+    position: absolute;
+    transition: 0.35s;
+    }
+    
+    .switch::before {
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 20%;
+    border-radius: 10px;
+    background-color: #3b5998;
+    }
+    
+    .switch::after {
+    left: 5px;
+    top: 50%;
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    border: none;
+    background-color: #c5d8f8;
+    transform: translateY(-50%);
+    opacity: 1;
+    }
+    
+    .switch:hover::after {
+    transform: translateY(-50%) scale(1.1);
+    }
+    
+    .input
+    + .switch {
+    background-color: #8fbde7;
+    }
+    
+    .input
+    + .switch::before {
+    width: calc(100% - 5px);
+    background-color: #5a92d1;
+    }
+    
+    .input
+    + .switch::after {
+    left: calc(100% - 25px);
+    background-color: #a4c1ed;
+    }
+

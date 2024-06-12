@@ -1,0 +1,290 @@
+<!-- Customer View -->
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Customer View</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+  #customer {
+    font-family: "Roboto Condensed", sans-serif;
+    color: #102851; 
+    font-size: 16px;
+    line-height: 1.875em;
+    position: relative;
+    background-color: #eaf4fc; 
+    transition: background-color 0.4s;
+}
+
+
+  .quantity-popup {
+      display: none;
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #f8f9fa ;
+      padding: 20px;
+      border: 1px solid #ccc;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .sidebar-customer {
+      position: fixed;
+      top: 0;
+      left: 0; 
+      width: 300px;
+      height: 100%;
+      background-color: #f8f9fa;
+      padding: 20px;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); 
+      z-index: 1; 
+  }
+
+  .payment-popup {
+      display: none;
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #f8f9fa;
+      padding: 20px;
+      border: 1px solid #ccc;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .container-customer {
+      margin-left: 320px; 
+  }
+  
+  #clear-cart {
+    display: block;
+    margin: 0 auto; /* This centers the button horizontally */
+}
+</style>
+</head>
+<body id='customer'>
+  <div class="container-customer">
+    <div class="input-switch">
+      <label for="switchy" id="admin-label">Admin</label>
+      <input type="checkbox" id="switchy" class="input" />
+      <label for="switchy" class="switch"></label>
+      <label for="switchy" id="customer-label">Customer</label>
+    </div>
+  </div>
+
+<div class="container-customer">
+  <h1 class="mt-5">Customer View</h1>
+
+  <div class="mt-3">
+    <div class="quantity-popup" id="quantity-popup">
+      <label for="popup-quantity">Quantity:</label>
+      <input type="number" id="popup-quantity" name="popup-quantity" min="1" required>
+      <button class="btn btn-primary" id="add-to-cart-popup">Add to Cart</button>
+    </div>
+  </div>
+
+  <div class="mt-3">
+    <h2>Filtered Inventory</h2>
+    <table class="table"style="color: black";>
+      <thead>
+      <tr>
+        <th>Product ID</th>
+        <th>Brand</th>
+        <th>Model</th>
+        <th>Price</th>
+        <th>Quantity</th>
+        <th>Action</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for index, row in inventory_data.iterrows() %}
+      <tr>
+        <td>{{ row['Product ID'] }}</td>
+        <td>{{ row['Brand'] }}</td>
+        <td>{{ row['Model'] }}</td>
+        <td>{{ row['Price'] }}</td>
+        <td>{{ row['Quantity'] }}</td>
+        <td>
+          <button class="btn btn-primary add-to-cart-btn" data-product-id="{{ row['Product ID'] }}">Add to Cart</button>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="sidebar-customer">
+  <h2>Cart</h2>
+  <ul id="cart-items">
+    <!-- Cart items will be added dynamically here -->
+  </ul>
+<!-- Discount coupon form -->
+<form id="discount-form">
+  <div class="form-group">
+    <label for="discount-code">Discount Coupon Code:</label>
+    <input type="text" class="form-control" id="discount-code" name="discount-code">
+  </div>
+  <button type="button" class="btn btn-primary" id="apply-discount-btn">Apply Coupon</button>
+</form>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const applyDiscountButton = document.getElementById('apply-discount-btn');
+    const discountCodeInput = document.getElementById('discount-code');
+
+    applyDiscountButton.addEventListener('click', function () {
+      const discountCode = discountCodeInput.value;
+      const cartValue = parseFloat(document.getElementById('total-price').textContent);
+      
+      // Send AJAX request to apply discount
+      fetch('/apply_discount', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ cart_value: cartValue, discount_id: discountCode }),
+      })
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error('Failed to apply discount');
+        }
+      })
+      .then(data => {
+        // Update total price with discounted price
+        document.getElementById('total-price').textContent = data.discounted_price.toFixed(2);
+        alert('Discount applied successfully!');
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to apply discount');
+      });
+    });
+  });
+</script>
+  
+  <p><strong>Total Price:</strong> $<span id="total-price">0</span></p>
+  <button class="btn btn-danger" id="clear-cart">Clear Cart</button>
+  <button class="btn btn-primary" id="payment-button">Payment</button>
+</div>
+
+
+<div class="payment-popup" id="payment-popup">
+  <!-- Payment form will be displayed here -->
+  <h3>Payment Form</h3>
+  <!-- Add your payment form elements here -->
+  <p>Developer is still working on the payment function. You will receive an email regarding your purchase.</p>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+  const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
+  const quantityPopup = document.getElementById('quantity-popup');
+  const popupQuantityInput = document.getElementById('popup-quantity');
+  const addToCartPopupButton = document.getElementById('add-to-cart-popup');
+  const cartItemsList = document.getElementById('cart-items');
+  const totalPriceElement = document.getElementById('total-price');
+  const clearCartButton = document.getElementById('clear-cart');
+  const paymentButton = document.getElementById('payment-button');
+  const paymentPopup = document.getElementById('payment-popup');
+  let cartItems = [];
+  let total_price = 0;
+  let currentProductId = null;
+
+  addToCartButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      currentProductId = button.getAttribute('data-product-id');
+      quantityPopup.style.display = 'block';
+    });
+  });
+
+  addToCartPopupButton.addEventListener('click', function () {
+    const quantity = parseInt(popupQuantityInput.value);
+    if (!isNaN(quantity) && quantity > 0) {
+      // Check if the product already exists in the cart
+      let existingItemIndex = cartItems.findIndex(item => item.product_id === currentProductId);
+      if (existingItemIndex !== -1) {
+        // If the product exists, update the quantity
+        cartItems[existingItemIndex].quantity = quantity;
+      } else {
+        // Otherwise, add the product to the cart
+        const cartItem = { product_id: currentProductId, quantity: quantity };
+        cartItems.push(cartItem);
+      }
+
+      // Update cart items in the sidebar
+      updateCartItems();
+
+      // Calculate and update total price
+      total_price = calculateTotalPrice(cartItems);
+      totalPriceElement.textContent = total_price.toFixed(2);
+
+      quantityPopup.style.display = 'none';
+      popupQuantityInput.value = ''; // Clear the input field for the next entry
+    } else {
+      alert('Please enter a valid quantity.');
+    }
+  });
+
+  clearCartButton.addEventListener('click', function () {
+    cartItems = [];
+    updateCartItems();
+    totalPriceElement.textContent = '0.00';
+  });
+
+  paymentButton.addEventListener('click', function () {
+    // Generate content for payment popup
+    let paymentContent = '<h3>Payment Form</h3>';
+    paymentContent += '<ul>';
+    cartItems.forEach(function (item) {
+      paymentContent += `<li>${item.quantity} units of ${item.product_id}</li>`;
+    });
+    paymentContent += '</ul>';
+    paymentContent += `<p><strong>Total Price:</strong> $${total_price.toFixed(2)}</p>`;
+    paymentContent += `<p>Note: Developer is still working on the payment function. You will receive an email regarding your purchase.</p>`;
+    paymentPopup.innerHTML = paymentContent;
+
+    // Display the payment popup
+    paymentPopup.style.display = 'block';
+  });
+
+  function updateCartItems() {
+    cartItemsList.innerHTML = '';
+    cartItems.forEach(function (item) {
+      const listItem = document.createElement('li');
+      listItem.textContent = `${item.quantity} units of ${item.product_id}`;
+      cartItemsList.appendChild(listItem);
+    });
+  }
+
+  function calculateTotalPrice(cartItems) {
+    let totalPrice = 0;
+    cartItems.forEach(function (item) {
+      const productPrice = getProductPrice(item.product_id);
+      totalPrice += item.quantity * productPrice;
+    });
+    return totalPrice;
+  }
+
+  function getProductPrice(productId) {
+    // Retrieve product price from inventory_data
+    const product = Array.from({{ inventory_data.to_dict(orient='records') | tojson | safe }}).find(product => product['Product ID'] === productId);
+    return product ? product['Price'] : 0;
+  }
+
+  document.getElementById('switchy').addEventListener('change', function() {
+    if (this.checked) {
+        window.location.href = '{{ url_for("customer") }}'; 
+    } else {
+        window.location.href = '{{ url_for("admin") }}'; 
+    }
+  });
+});
+
+</script>
+</body>
+</html>
+
